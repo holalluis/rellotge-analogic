@@ -6,8 +6,8 @@
     canvas.hora{
       border:1px solid black;
       background:lightblue;
-      width:300px;
-      height:300px;
+      width:250px;
+      height:250px;
       margin-top:1px;
     }
   </style>
@@ -18,7 +18,7 @@
     onclick="dibuixa()"
     style="
       padding:10px 20px;
-      width:302px;
+      width:252px;
     "
   >genera hora aleatòria</button>
 </div>
@@ -26,11 +26,12 @@
 <canvas class=hora></canvas>
 
 <script>
-  const W        = 300;//px amplada canvas
-  const H        = 300;//px alçada canvas
+  const W        = 250;//px amplada canvas
+  const H        = 250;//px alçada canvas
   const RADI     = 100;//px radi rellotge
   const AGULLA_H = RADI*(2/(1+Math.sqrt(5))); //px llargada agulla hores | numero auric
   const AGULLA_M = RADI*0.95;                 //px llargada agulla minuts
+  const DOS_PI   = 2*Math.PI;
 
   function genera_hora_aleatoria(){
     let hh = Math.floor(12*Math.random());
@@ -50,9 +51,9 @@
     let c = canvas.getContext('2d');
     c.font = `18px Arial`;
 
-    //dibuixa rodona
+    //dibuixa corona
     c.beginPath();
-    c.arc(W/2,H/2,RADI,0,2*Math.PI);
+    c.arc(W/2,H/2,RADI,0,DOS_PI);
     c.closePath();
     c.lineWidth=1; //border width
     c.strokeStyle="black"; //border color
@@ -63,7 +64,7 @@
     //marca les hores (en text)
     [12,1,2,3,4,5,6,7,8,9,10,11].forEach(h=>{
       c.beginPath();
-      let rad = -2*Math.PI*h/12 +Math.PI/2;
+      let rad = -DOS_PI*h/12 +Math.PI/2;
       let x = W/2 + Math.cos(rad)*RADI*0.75;
       let y = H/2 - Math.sin(rad)*RADI*0.75;
       c.moveTo(x,y);
@@ -83,7 +84,7 @@
 
       let llargada = i%5==0 ? 0.85 : 0.95;
 
-      let rad = -2*Math.PI*i/60 +Math.PI/2;
+      let rad = -DOS_PI*i/60 +Math.PI/2;
       let xi = W/2 + Math.cos(rad)*RADI*llargada;
       let yi = H/2 - Math.sin(rad)*RADI*llargada;
       c.moveTo(xi,yi);
@@ -101,7 +102,7 @@
     c.beginPath();
     c.moveTo(W/2,H/2);
     {
-      let rad = -2*Math.PI*hora.mm/60 +Math.PI/2;
+      let rad = -DOS_PI*hora.mm/60 +Math.PI/2;
       c.lineTo(
         W/2 + Math.cos(rad)*AGULLA_M,
         H/2 - Math.sin(rad)*AGULLA_M
@@ -116,10 +117,10 @@
     c.beginPath();
     c.moveTo(W/2,H/2);
     {
-      let rad = -2*Math.PI*hora.hh/12 +Math.PI/2;
+      let rad = -DOS_PI*hora.hh/12 +Math.PI/2;
 
       //afegeix una mica més d'angle corresponent al minut
-      rad -= (hora.mm/61)*(2*Math.PI/12);
+      rad -= (hora.mm/61)*(DOS_PI/12);
 
       c.lineTo(
         W/2 + Math.cos(rad)*AGULLA_H,
@@ -133,13 +134,19 @@
 
     //dibuixa una mena de cargol al centre
     c.beginPath();
-    c.arc(W/2,H/2,RADI*0.05,0,2*Math.PI);
+      c.arc(W/2,H/2,RADI*0.05,0,DOS_PI);
+      c.lineWidth=1; //border width
+      c.strokeStyle="#aaa"; //border color
+      c.stroke();
+      c.fillStyle="#666"; //color interior
+      c.fill();
     c.closePath();
-    c.lineWidth=1; //border width
-    c.strokeStyle="#aaa"; //border color
-    c.stroke();
-    c.fillStyle="#666"; //color interior
-    c.fill();
+
+    c.beginPath();
+      c.arc(W/2,H/2,1,0,DOS_PI);
+      c.fillStyle="black"; //color interior
+      c.fill();
+    c.closePath();
 
     //escriu la hora en digital al canvas
     let h = hora.hh; //numero
@@ -154,7 +161,7 @@
 
   function dibuixa(){
     let h = genera_hora_aleatoria();
-    console.log(h);
+    console.log("hora generada:",`${h.hh}:${h.mm}`);
     dibuixa_hora(h);
   }
 
