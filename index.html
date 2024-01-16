@@ -18,6 +18,7 @@
     onclick="dibuixa()"
     style="
       padding:10px 20px;
+      width:302px;
     "
   >genera hora aleatòria</button>
 </div>
@@ -29,7 +30,7 @@
   const H        = 300;//px alçada canvas
   const RADI     = 100;//px radi rellotge
   const AGULLA_H = RADI*(2/(1+Math.sqrt(5))); //px llargada agulla hores | numero auric
-  const AGULLA_M = RADI*0.90;                 //px llargada agulla minuts
+  const AGULLA_M = RADI*0.85;                 //px llargada agulla minuts
 
   function genera_hora_aleatoria(){
     let hh = Math.floor(12*Math.random());
@@ -47,7 +48,7 @@
 
     //get context 2d i set font
     let c = canvas.getContext('2d');
-    c.font = `15px Arial`;
+    c.font = `18px Arial`;
 
     //dibuixa rodona
     c.beginPath();
@@ -131,8 +132,11 @@
     c.stroke();
     c.closePath();
 
-    //posa la hora en digital
-    let text=`${hora.hh<10?'0'+hora.hh:hora.hh}:${hora.mm<10?'0'+hora.mm:hora.mm}`;
+    //escriu la hora en digital al canvas
+    let h = hora.hh; //numero
+    if(h==0) h=12;
+
+    let text=`${h<10?'0'+h:h}:${hora.mm<10?'0'+hora.mm:hora.mm}`;
     let metrics = c.measureText(text);
     let height  = metrics.actualBoundingBoxAscent + metrics.actualBoundingBoxDescent;
     c.fillText(text,W/2-metrics.width/2,height+5);
