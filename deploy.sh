@@ -1,8 +1,8 @@
 #!/bin/bash
 
 #git
-#git add *
-#git commit -am 'update'
+git add *
+git commit -am 'update'
 #git push
 
 #desplega la web al servidor
