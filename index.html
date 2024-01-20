@@ -194,10 +194,12 @@
     return document.createElementNS("http://www.w3.org/2000/svg",nom);
   }
 
+  //referència: "https://developer.mozilla.org/en-US/docs/Web/SVG/Tutorial/Basic_Shapes"
   function dibuixa_hora_svg(hora,svg){
     hora = hora || {hh:0,mm:0};
     svg  = svg  || document.querySelector('svg');
 
+    //elimina contingut anterior
     svg.innerHTML="";
 
     //força tamany element
