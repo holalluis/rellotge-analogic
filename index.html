@@ -33,13 +33,13 @@
   "
 >
   <div>
-    canvas:<br>
+    canvas (pixels):<br>
     <canvas class=hora></canvas>
   </div>
   <div>&nbsp;</div>
 
   <div>
-    svg:<br>
+    svg (vectors):<br>
     <svg class=hora width="250" height="250"></svg>
   </div>
 </div>
@@ -327,7 +327,7 @@
       let el = crea_element_svg("text");
       el.innerHTML=text;
       el.setAttribute("x",W/2-25);
-      el.setAttribute("y",15);
+      el.setAttribute("y",18);
       el.setAttribute("fill","black");
       svg.appendChild(el);
     }
