@@ -3,12 +3,15 @@
   <meta name="viewport" content="width=device-width,initial-scale=1,user-scalable=yes">
   <title>Rellotge analògic</title>
   <style>
-    canvas.hora{
+    canvas.hora,
+    svg.hora{
       border:1px solid black;
       background:lightblue;
       width:250px;
       height:250px;
       margin-top:1px;
+      font-family:monospace;
+      font-size:18px;
     }
   </style>
 </head><body><h1>Rellotge analògic</h1>
@@ -23,7 +26,20 @@
   >genera hora aleatòria</button>
 </div>
 
-<canvas class=hora></canvas>
+<div
+  style="display:flex"
+>
+  <div>
+    canvas:<br>
+    <canvas class=hora></canvas>
+  </div>
+  <div>&nbsp;</div>
+
+  <div>
+    svg:<br>
+    <svg class=hora width="250" height="250"></svg>
+  </div>
+</div>
 
 <script>
   const W        = 250;//px amplada canvas
@@ -32,6 +48,7 @@
   const AGULLA_H = RADI*(2/(1+Math.sqrt(5))); //px llargada agulla hores | numero auric
   const AGULLA_M = RADI*0.95;                 //px llargada agulla minuts
   const DOS_PI   = 2*Math.PI;
+  const CTX_FONT = "18px Arial";
 
   function genera_hora_aleatoria(){
     let hh = Math.floor(12*Math.random());
@@ -39,7 +56,7 @@
     return {hh,mm};
   }
 
-  function dibuixa_hora(hora,canvas){
+  function dibuixa_hora_canvas(hora,canvas){
     hora   = hora   || {hh:0,mm:0};
     canvas = canvas || document.querySelector('canvas');
 
@@ -49,28 +66,29 @@
 
     //get context 2d i set font
     let c = canvas.getContext('2d');
-    c.font = `18px Arial`;
+    c.font = CTX_FONT;
 
-    //dibuixa corona
+    //dibuixa corona rellotge
     c.beginPath();
     c.arc(W/2,H/2,RADI,0,DOS_PI);
     c.closePath();
     c.lineWidth=1; //border width
-    c.strokeStyle="black"; //border color
+    c.strokeStyle="#666"; //border color
     c.stroke();
-    c.fillStyle="lightyellow"; //color interior
+    c.fillStyle="lightyellow"; //color interior corona
     c.fill();
 
-    //marca les hores (en text)
+    //escriu el número de cada hora
     [12,1,2,3,4,5,6,7,8,9,10,11].forEach(h=>{
+      //posició
       c.beginPath();
-      let rad = -DOS_PI*h/12 +Math.PI/2;
+      let rad = -DOS_PI*h/12 + Math.PI/2; //angle
       let x = W/2 + Math.cos(rad)*RADI*0.75;
       let y = H/2 - Math.sin(rad)*RADI*0.75;
       c.moveTo(x,y);
       c.closePath();
 
-      //text hora
+      //text
       c.fillStyle="black";
       let text = h;
       let metrics = c.measureText(text);
@@ -78,92 +96,245 @@
       c.fillText(text,x-metrics.width/2,y+height/2);
     });
 
-    //dibuixa una ratlla per cada minut
+    //dibuixa petita línia per cada minut (60)
     for(let i=0;i<60;i++){
       c.beginPath();
 
+      //si és múltiple de 5 fes-la una mica més llarga
       let llargada = i%5==0 ? 0.85 : 0.95;
 
-      let rad = -DOS_PI*i/60 +Math.PI/2;
+      let rad = -DOS_PI*i/60 +Math.PI/2; //angle del minut
+
+      //punt inicial
       let xi = W/2 + Math.cos(rad)*RADI*llargada;
       let yi = H/2 - Math.sin(rad)*RADI*llargada;
       c.moveTo(xi,yi);
+
+      //punt final
       let xf = W/2 + Math.cos(rad)*RADI;
       let yf = H/2 - Math.sin(rad)*RADI;
+
       c.lineTo(xf,yf);
       c.closePath();
 
+      //amplada lína en píxels
       c.lineWidth= i%5==0?2:1;
       c.strokeStyle="black";
       c.stroke();
     }
 
-    //dibuixa agulla minuts
-    c.beginPath();
-    c.moveTo(W/2,H/2);
+    //dibuixa agulla minutera
     {
-      let rad = -DOS_PI*hora.mm/60 +Math.PI/2;
+      c.beginPath();
+      c.moveTo(W/2,H/2); //comença des del centre
+      let rad = -DOS_PI*hora.mm/60 +Math.PI/2; //angle
       c.lineTo(
         W/2 + Math.cos(rad)*AGULLA_M,
         H/2 - Math.sin(rad)*AGULLA_M
       );
+      c.lineWidth=3.82;
+      c.strokeStyle="red";
+      c.stroke();
+      c.closePath();
     }
-    c.lineWidth=3.82;
-    c.strokeStyle="red";
-    c.stroke();
-    c.closePath();
 
-    //dibuixa agulla hores
-    c.beginPath();
-    c.moveTo(W/2,H/2);
+    //dibuixa agulla horària
     {
-      let rad = -DOS_PI*hora.hh/12 +Math.PI/2;
+      c.beginPath();
+      c.moveTo(W/2,H/2); //comença des del centre
+      let rad = -DOS_PI*hora.hh/12 +Math.PI/2; //angle
 
-      //afegeix una mica més d'angle corresponent al minut
+      //afegeix una mica més d'angle corresponent al minut/60
       rad -= (hora.mm/61)*(DOS_PI/12);
 
       c.lineTo(
         W/2 + Math.cos(rad)*AGULLA_H,
         H/2 - Math.sin(rad)*AGULLA_H
       );
-    }
-    c.lineWidth=6.18;
-    c.strokeStyle="blue";
-    c.stroke();
-    c.closePath();
-
-    //dibuixa una mena de cargol al centre
-    c.beginPath();
-      c.arc(W/2,H/2,RADI*0.05,0,DOS_PI);
-      c.lineWidth=1; //border width
-      c.strokeStyle="#aaa"; //border color
+      c.lineWidth=6.18;
+      c.strokeStyle="blue";
       c.stroke();
-      c.fillStyle="#666"; //color interior
-      c.fill();
-    c.closePath();
+      c.closePath();
+    }
 
-    c.beginPath();
-      c.arc(W/2,H/2,1,0,DOS_PI);
-      c.fillStyle="black"; //color interior
-      c.fill();
-    c.closePath();
+    //dibuixa una mena de cargol al centre de la corona
+    {
+      c.beginPath();
+        c.arc(W/2,H/2,RADI*0.05,0,DOS_PI);
+        c.lineWidth=1; //border width
+        c.strokeStyle="#aaa"; //border color
+        c.stroke();
+        c.fillStyle="#666"; //color interior
+        c.fill();
+      c.closePath();
+      c.beginPath();
+        c.arc(W/2,H/2,1,0,DOS_PI);
+        c.fillStyle="black"; //color interior
+        c.fill();
+      c.closePath();
+    }
 
     //escriu la hora en digital al canvas
-    let h = hora.hh; //numero
-    if(h==0) h=12;
+    {
+      let h = hora.hh; //number
+      let m = hora.mm; //number
+      if(h==0) h=12; //canvia 00 per 12
+      let text=`${h<10?'0'+h:h}:${m<10?'0'+m:m}`;
+      let metrics = c.measureText(text);
+      let height  = metrics.actualBoundingBoxAscent + metrics.actualBoundingBoxDescent;
+      c.fillStyle="black"; //color interior
+      c.fillText(text,W/2-metrics.width/2,height+5); //a dalt al mig
+    }
+  }
 
-    let text=`${h<10?'0'+h:h}:${hora.mm<10?'0'+hora.mm:hora.mm}`;
-    let metrics = c.measureText(text);
-    let height  = metrics.actualBoundingBoxAscent + metrics.actualBoundingBoxDescent;
-    c.fillStyle="black"; //color interior
-    c.fillText(text,W/2-metrics.width/2,height+5);
+  function crea_element_svg(nom){
+    return document.createElementNS("http://www.w3.org/2000/svg",nom);
+  }
+
+  function dibuixa_hora_svg(hora,svg){
+    hora = hora || {hh:0,mm:0};
+    svg  = svg  || document.querySelector('svg');
+
+    svg.innerHTML="";
+
+    //força tamany element
+    svg.width  = W;
+    svg.height = H;
+
+    //dibuixa corona rellotge
+    {
+      let corona = crea_element_svg("circle");
+      corona.setAttribute('cx',W/2);
+      corona.setAttribute('cy',H/2);
+      corona.setAttribute('r',RADI);
+      corona.setAttribute('stroke','black');
+      corona.setAttribute('fill','lightyellow');
+      svg.appendChild(corona);
+    }
+
+    //escriu el número de cada hora
+    [12,1,2,3,4,5,6,7,8,9,10,11].forEach(h=>{
+      //posició
+      let rad = -DOS_PI*h/12 + Math.PI/2; //angle
+      let x = W/2 + Math.cos(rad)*RADI*0.75;
+      let y = H/2 - Math.sin(rad)*RADI*0.75;
+
+      //text
+      let text = h;
+      let el = crea_element_svg("text");
+
+      let offset_x = h<10 ? 9/2 : 9;
+      let offset_y = h<10 ? 9/2 : 9;
+
+      el.setAttribute("x",x-offset_x);
+      el.setAttribute("y",y+offset_y);
+
+      el.innerHTML=h;
+      svg.appendChild(el);
+    });
+
+    //dibuixa petita línia per cada minut (60)
+    for(let i=0;i<60;i++){
+      //si és múltiple de 5 fes-la una mica més llarga
+      let llargada = i%5==0 ? 0.85 : 0.95;
+      let rad = -DOS_PI*i/60 +Math.PI/2; //angle del minut
+
+      //punt inicial
+      let xi = W/2 + Math.cos(rad)*RADI*llargada;
+      let yi = H/2 - Math.sin(rad)*RADI*llargada;
+
+      //punt final
+      let xf = W/2 + Math.cos(rad)*RADI;
+      let yf = H/2 - Math.sin(rad)*RADI;
+
+      let line = crea_element_svg("line");
+
+      line.setAttribute("x1",xi);
+      line.setAttribute("y1",yi);
+      line.setAttribute("x2",xf);
+      line.setAttribute("y2",yf);
+      line.setAttribute("stroke","black");
+      line.setAttribute("stroke-width", i%5==0?2:1);
+      svg.appendChild(line);
+    }
+
+    //dibuixa agulla minutera
+    {
+      let line = crea_element_svg("line");
+      line.setAttribute("x1",W/2);
+      line.setAttribute("y1",H/2);
+
+      let rad = -DOS_PI*hora.mm/60 +Math.PI/2; //angle
+
+      line.setAttribute("x2",W/2 + Math.cos(rad)*AGULLA_M);
+      line.setAttribute("y2",H/2 - Math.sin(rad)*AGULLA_M);
+      line.setAttribute("stroke","red");
+      line.setAttribute("stroke-width",3.82);
+
+      svg.appendChild(line);
+    }
+
+    //dibuixa agulla horària
+    {
+      let line = crea_element_svg("line");
+      line.setAttribute("x1",W/2);
+      line.setAttribute("y1",H/2);
+
+      let rad = -DOS_PI*hora.hh/12 +Math.PI/2; //angle
+      rad -= (hora.mm/61)*(DOS_PI/12);
+
+      line.setAttribute("x2",W/2 + Math.cos(rad)*AGULLA_H);
+      line.setAttribute("y2",H/2 - Math.sin(rad)*AGULLA_H);
+      line.setAttribute("stroke","blue");
+      line.setAttribute("stroke-width",6.18);
+
+      svg.appendChild(line);
+    }
+
+    //dibuixa una mena de cargol al centre de la corona
+    {
+      //cercle1
+      let circle = crea_element_svg("circle");
+      circle.setAttribute("cx",W/2);
+      circle.setAttribute("cy",W/2);
+      circle.setAttribute("r",RADI*0.05);
+      circle.setAttribute("stroke","#aaa");
+      circle.setAttribute("stroke-width",1);
+      circle.setAttribute("fill","#666");
+      svg.appendChild(circle);
+
+      //cercle2
+      svg.appendChild((function(){
+        let el = crea_element_svg("circle");
+        el.setAttribute("cx",W/2);
+        el.setAttribute("cy",W/2);
+        el.setAttribute("r",1);
+        el.setAttribute("fill","black");
+        return el;
+      })());
+    }
+
+    //escriu la hora en digital al canvas
+    {
+      let h = hora.hh; //number
+      let m = hora.mm; //number
+      if(h==0) h=12; //canvia 00 per 12
+      let text=`${h<10?'0'+h:h}:${m<10?'0'+m:m}`;
+
+      let el = crea_element_svg("text");
+      el.innerHTML=text;
+      el.setAttribute("x",W/2-25);
+      el.setAttribute("y",15);
+      el.setAttribute("fill","black");
+      svg.appendChild(el);
+    }
   }
 
   function dibuixa(){
     let h = genera_hora_aleatoria();
     console.log("hora generada:",`${h.hh}:${h.mm}`);
-    dibuixa_hora(h);
+    dibuixa_hora_canvas(h);
+    dibuixa_hora_svg(h);
   }
-
   dibuixa();
 </script>
